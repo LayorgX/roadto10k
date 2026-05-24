@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RoadTo10k v3</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --bg:#f7f5f0;
+  --card:#ffffff;
+  --ink:#1f2937;
+  --muted:#667085;
+  --line:#e5e7eb;
+  --accent:#7c3aed;
+  --accent2:#14b8a6;
+  --warm:#f59e0b;
+  --soft:#ede9fe;
+  --dark:#111827;
+}
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+  background:linear-gradient(180deg,#fffefa 0%,#faf8f2 100%);
+  color:var(--ink);
+}
+.topbar {
+  position:sticky;
+  top:0;
+  z-index:1000;
+  height:58px;
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.topbar-inner {
+  max-width:1180px;
+  margin:0 auto;
+  height:58px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:0 18px;
+}
+.logo {
+  font-weight:900;
+  letter-spacing:-.04em;
+  font-size:20px;
+  color:var(--ink);
+  white-space:nowrap;
+}
+.menu {
+  display:flex;
+  gap:6px;
+  align-items:center;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.menu::-webkit-scrollbar { display:none; }
+.menu a {
+  text-decoration:none;
+  color:var(--muted);
+  font-weight:700;
+  font-size:13px;
+  padding:7px 10px;
+  border-radius:999px;
+  white-space:nowrap;
+}
+.menu a:hover, .menu a.active {
+  background:var(--soft);
+  color:#5b21b6;
+}
+.hero {
+  padding:54px 24px 34px;
+  background:radial-gradient(circle at top left,#ede9fe 0,transparent 34%),linear-gradient(135deg,#fff 0%,#f7f3ff 100%);
+  border-bottom:1px solid var(--line);
+}
+.wrap { max-width:1180px; margin:0 auto; }
+.badge {
+  display:inline-flex;
+  gap:8px;
+  align-items:center;
+  padding:8px 12px;
+  border-radius:999px;
+  background:var(--soft);
+  color:#5b21b6;
+  font-weight:800;
+  font-size:13px;
+}
+h1 { font-size:clamp(42px,7vw,82px); letter-spacing:-.07em; margin:18px 0 8px; line-height:.9; }
+h2 { font-size:34px; letter-spacing:-.04em; margin:0 0 14px; }
+h3 { margin:0 0 10px; font-size:21px; }
+p { line-height:1.58; }
+.lead { max-width:820px; color:var(--muted); font-size:19px; line-height:1.55; }
+section { padding:34px 24px; scroll-margin-top:76px; }
+.grid { display:grid; gap:18px; }
+.kpis { grid-template-columns:repeat(4,minmax(0,1fr)); margin-top:28px; }
+.two { grid-template-columns:1.15fr .85fr; align-items:start; }
+.three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.card {
+  background:rgba(255,255,255,.9);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:24px;
+  box-shadow:0 10px 30px rgba(31,41,51,.06);
+}
+.kpi small { color:var(--muted); font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
+.kpi strong { display:block; font-size:32px; margin-top:8px; letter-spacing:-.04em; }
+.controls { display:flex; gap:10px; flex-wrap:wrap; margin:16px 0; }
+input, select, button {
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:11px 13px;
+  font-size:14px;
+  background:white;
+}
+button { cursor:pointer; font-weight:800; color:white; background:var(--accent); border-color:var(--accent); }
+table { width:100%; border-collapse:separate; border-spacing:0 10px; }
+th { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.08em; text-align:left; padding:0 12px; }
+td { background:white; padding:14px 12px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); vertical-align:top; }
+td:first-child { border-left:1px solid var(--line); border-radius:16px 0 0 16px; font-weight:800; }
+td:last-child { border-right:1px solid var(--line); border-radius:0 16px 16px 0; }
+.tag { padding:6px 10px; border-radius:999px; background:#f1f5f9; font-size:12px; font-weight:800; display:inline-block; }
+.forecast { background:linear-gradient(135deg,#ecfeff,#fff7ed); }
+.callout { background:var(--dark); color:white; }
+.callout p,.callout li { color:#e5e7eb; }
+ul { margin:8px 0 0 20px; line-height:1.65; }
+.timeline { display:grid; gap:14px; }
+.step { border-left:5px solid var(--accent2); padding:16px 18px; background:white; border-radius:0 20px 20px 0; border:1px solid var(--line); border-left-width:5px; }
+.knowledge-card { min-height:260px; }
+.training-check { margin-top:48px; }
+.cycle-callout { margin-top:48px; }
+.fueling-formula { margin-top:48px; }
+.content-placeholder { margin-top:48px; }
+.highlight { background:var(--soft); padding:2px 7px; border-radius:7px; font-weight:800; }
+.placeholder {
+  border:2px dashed #d1d5db;
+  padding:20px;
+  border-radius:16px;
+  background:#fafafa;
+  color:var(--muted);
+  margin-top:20px;
+}
+.footer { color:var(--muted); font-size:13px; padding-bottom:50px; text-align:center; }
+@media (max-width:900px){
+  .kpis,.two,.three { grid-template-columns:1fr; }
+  .topbar-inner { padding:0 12px; }
+  .logo { font-size:18px; }
+  .menu a { font-size:12px; padding:7px 8px; }
+  table { font-size:13px; }
+  th:nth-child(4), td:nth-child(4), th:nth-child(5), td:nth-child(5) { display:none; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <div class="logo">RoadTo10k</div>
+    <div class="menu">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#runs">Läufe</a>
+      <a href="#prognose">Prognose</a>
+      <a href="#wissen">Wissen</a>
+      <a href="#training">Trainingsarten</a>
+      <a href="#zyklus">Zyklus</a>
+      <a href="#fueling">Fueling</a>
+      <a href="#rpe">RPE</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="dashboard">
+  <div class="wrap">
+    <div class="badge">🏁 10-km-Projekt · Ziel: 20.06. · ca. 75 Minuten</div>
+    <h1>RoadTo10k</h1>
+    <p class="lead">
+      Franzi, diese Seite zeigt dir deine Entwicklung und gibt dir eine Wissensdatenbank,
+      auf die du jederzeit zurückgreifen kannst. Du siehst, was du schon geschafft hast,
+      warum die Einheiten sinnvoll sind und wie du dich mental und körperlich auf den 10-km-Lauf vorbereitest.
+    </p>
+    <div class="grid kpis">
+      <div class="card kpi"><small>Dokumentierte Läufe</small><strong>10</strong></div>
+      <div class="card kpi"><small>Gesamtdistanz</small><strong>56.2 km</strong></div>
+      <div class="card kpi"><small>Gesamtzeit</small><strong>7h 54min</strong></div>
+      <div class="card kpi"><small>Längste Einheit</small><strong>57:46</strong></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap grid two">
+    <div class="card">
+      <h2>Deine Entwicklung auf einen Blick</h2>
+      <canvas id="progressChart" height="130"></canvas>
+    </div>
+    <div class="card">
+      <h2>Was man klar erkennt</h2>
+      <ul>
+        <li>Du läufst inzwischen regelmäßig über 50 Minuten.</li>
+        <li>Du kannst lockere, lange und schnelle Einheiten unterscheiden.</li>
+        <li>Deine schnelleren Abschnitte liegen bereits näher an der späteren Wettkampfpace.</li>
+        <li>Ohne Kinderwagen wirkst du sichtbar ökonomischer und kontrollierter.</li>
+        <li>Du hast deine ersten Intervallblöcke geschafft.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="runs">
+  <div class="wrap">
+    <div class="card">
+      <h2>Alle Läufe – filterbar & sortierbar</h2>
+      <p>Nutze Suche, Wochenfilter und Sortierung, um einzelne Einheiten anzusehen.</p>
+      <div class="controls">
+        <input id="search" placeholder="Suche: Intervall, Long Run, 18.05..." />
+        <select id="weekFilter">
+          <option value="">Alle Wochen</option>
+          <option>Woche 1</option><option>Woche 2</option><option>Woche 3</option><option>Woche 4</option>
+        </select>
+        <select id="sortBy">
+          <option value="date">Sortieren: Datum</option>
+          <option value="dist">Distanz</option>
+          <option value="time_sec">Dauer</option>
+          <option value="pace_sec">Pace</option>
+        </select>
+        <button onclick="resetFilters()">Zurücksetzen</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Datum</th><th>Woche</th><th>Titel</th><th>Plan</th><th>Ergebnis</th><th>RPE</th><th>Details</th></tr>
+        </thead>
+        <tbody id="runTable"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="prognose">
+  <div class="wrap grid two">
+    <div class="card forecast">
+      <h2>Prognose fürs Rennen</h2>
+      <p>
+        Wenn du dich weiter strikt an den Plan hältst, ist das realistische Ziel:
+        <strong>10 km kontrolliert finishen – etwa im Bereich 75 bis 82 Minuten.</strong>
+      </p>
+      <p>
+        Die 75 Minuten sind möglich, wenn der Renntag gut läuft: ruhiger Start,
+        keine Magenprobleme, moderate Temperaturen, gute Energieversorgung und mentale Kontrolle.
+        Der wichtigste Faktor wird nicht „schneller werden“, sondern <strong>konstant bleiben</strong>.
+      </p>
+      <ul>
+        <li><strong>0–2 km:</strong> bewusst ruhig, RPE 4–5.</li>
+        <li><strong>3–7 km:</strong> Rhythmus finden, RPE 5–6.</li>
+        <li><strong>8–10 km:</strong> nur steigern, wenn du noch Kontrolle hast.</li>
+      </ul>
+    </div>
+    <div class="card callout">
+      <h2>Race Day: 1 Tag vor der Periode</h2>
+      <p>
+        Der Wettkampf liegt voraussichtlich einen Tag vor Beginn deiner Periode – also in einer Phase,
+        in der sich Laufen oft schwerer anfühlen kann. Das kann bedeuten:
+        höheres Wärmeempfinden, mehr Hunger, mehr innere Unruhe, schwerere Beine, sensibleren Magen
+        oder weniger mentale Leichtigkeit.
+      </p>
+      <p>
+        Wichtig: Das heißt nicht, dass du schlechter vorbereitet bist. Es bedeutet nur,
+        dass dein Körper an diesem Tag wahrscheinlich etwas mehr Management braucht.
+      </p>
+      <ul>
+        <li>Plane den Renntag nicht als perfekten Tag, sondern als kontrollierbaren Tag.</li>
+        <li>Erwarte nicht, dass sich die ersten Kilometer leicht anfühlen müssen.</li>
+        <li>Bewerte dich nach Umsetzung: ruhig starten, trinken, dranbleiben, nicht panisch werden.</li>
+        <li>Startsatz: „Ich muss mich nicht perfekt fühlen, um stark zu finishen.“</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="card">
+      <h2>Meilensteine, die du schon erreicht hast</h2>
+      <div class="timeline">
+        <div class="step"><h3>1. Regelmäßigkeit aufgebaut</h3><p>Du hast mehrere Wochen Training in den Alltag integriert – trotz Familie, Reise, Kinderwagen und begrenzten Zeitfenstern.</p></div>
+        <div class="step"><h3>2. Längere Belastungen toleriert</h3><p>Von rund 46 Minuten bis fast 58 Minuten: Deine Ausdauerbasis wächst.</p></div>
+        <div class="step"><h3>3. Erste Intervalle geschafft</h3><p>Du weißt jetzt, dass schnelle Abschnitte machbar sind und wieder enden.</p></div>
+        <div class="step"><h3>4. Wettkampfvertrauen entsteht</h3><p>Besonders der Lauf ohne Kinderwagen zeigt: Im Rennen kann sich Laufen deutlich freier und leichter anfühlen.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="wissen">
+  <div class="wrap">
+    <div class="card">
+      <h2>Wissensdatenbank</h2>
+      <p>
+        Franzi, dieser Bereich ist deine kleine Lauf-Bibliothek. Du musst nicht alles auswendig wissen.
+        Nutze ihn wie ein Nachschlagewerk: vor einer Einheit, nach einem schlechten Lauf,
+        vor dem Race Day oder wenn du verstehen willst, warum etwas im Training passiert.
+      </p>
+      <p>
+        Die wichtigste Grundregel: Training ist nicht nur „schneller werden“.
+        Training ist ein Zusammenspiel aus Belastung, Erholung, Ernährung, Zyklus, Alltag und mentaler Sicherheit.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="training">
+  <div class="wrap">
+    <h2>Trainingsarten</h2>
+
+    <div class="grid three">
+      <div class="card knowledge-card">
+        <h3>Easy Run</h3>
+        <p>
+          Der Easy Run ist der wichtigste Lauf für deine Basis. Er soll sich bewusst locker anfühlen.
+          Wenn du danach denkst „ich hätte noch weiterlaufen können“, war er wahrscheinlich genau richtig.
+        </p>
+        <ul>
+          <li><strong>Intensität:</strong> RPE 4–5</li>
+          <li><strong>Gefühl:</strong> Du kannst noch sprechen.</li>
+          <li><strong>Ziel:</strong> Grundlagenausdauer, Routine, Belastbarkeit.</li>
+          <li><strong>Nicht das Ziel:</strong> Pace beweisen oder möglichst schnell laufen.</li>
+        </ul>
+        <p>
+          Easy Runs verbessern deine Fähigkeit, Sauerstoff zu nutzen, Energie effizient bereitzustellen
+          und regelmäßig zu trainieren, ohne dich jedes Mal zu erschöpfen.
+        </p>
+        <p>
+          <strong>Merksatz:</strong> Easy fühlt sich manchmal „zu leicht“ an – genau deshalb wirkt es.
+        </p>
+      </div>
+
+      <div class="card knowledge-card">
+        <h3>Long Run</h3>
+        <p>
+          Der Long Run bereitet dich am direktesten auf die 10 km vor, weil er deinem Körper zeigt:
+          „Ich kann lange unterwegs sein.“ Entscheidend ist nicht die Geschwindigkeit,
+          sondern die Zeit unter Belastung.
+        </p>
+        <ul>
+          <li><strong>Intensität:</strong> RPE 4–5</li>
+          <li><strong>Ziel:</strong> Ausdauer, Geduld, Energieeinteilung.</li>
+          <li><strong>Wirkung:</strong> bessere Ermüdungsresistenz.</li>
+          <li><strong>Mentale Funktion:</strong> Vertrauen aufbauen.</li>
+        </ul>
+        <p>
+          Der Long Run soll nicht wie ein Wettkampf wirken. Wenn du ihn zu schnell läufst,
+          wird er zwar kurzfristig beeindruckender, aber langfristig riskanter.
+        </p>
+        <p>
+          <strong>Merksatz:</strong> Beim Long Run trainierst du nicht Härte, sondern Gelassenheit.
+        </p>
+      </div>
+
+      <div class="card knowledge-card">
+        <h3>Intervalltraining</h3>
+        <p>
+          Intervalle sind kurze, schnellere Abschnitte mit lockerer Erholung dazwischen.
+          Sie bringen deinem Körper bei, mit höherer Belastung umzugehen und danach wieder runterzufahren.
+        </p>
+        <ul>
+          <li><strong>Intensität:</strong> meist RPE 6, nicht All-out.</li>
+          <li><strong>Gefühl:</strong> anstrengend, aber kontrollierbar.</li>
+          <li><strong>Ziel:</strong> Laufökonomie, Tempogefühl, mentale Stärke.</li>
+          <li><strong>Wichtig:</strong> Du solltest nicht völlig zerstört enden.</li>
+        </ul>
+        <p>
+          Bei dir sind Intervalle besonders wertvoll, weil sie dir zeigen:
+          schnellere Abschnitte sind unangenehm, aber begrenzt. Sie gehen vorbei.
+        </p>
+        <p>
+          <strong>Merksatz:</strong> Intervalle sind Training, kein Test.
+        </p>
+      </div>
+    </div>
+
+    <div class="card training-check">
+      <h3>Wie du erkennst, ob eine Einheit gut war</h3>
+      <ul>
+        <li><strong>Easy Run:</strong> Du warst locker, gleichmäßig und nicht erschöpft.</li>
+        <li><strong>Long Run:</strong> Du bist geduldig geblieben und hast nicht zu früh beschleunigt.</li>
+        <li><strong>Intervall:</strong> Die schnellen Abschnitte waren spürbar, aber kontrolliert.</li>
+        <li><strong>Guter Lauf allgemein:</strong> Du hast die Aufgabe erfüllt – nicht zwangsläufig eine schnelle Pace erzielt.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="zyklus">
+  <div class="wrap">
+    <h2>Laufen für Frauen & Zyklus</h2>
+
+    <div class="grid three">
+      <div class="card">
+        <h3>Während der Periode</h3>
+        <p>
+          In den ersten Tagen der Periode können Energie, Stimmung, Schlaf und Bauchgefühl schwanken.
+          Manche Läuferinnen fühlen sich überraschend gut, andere deutlich eingeschränkt.
+        </p>
+        <ul>
+          <li>RPE wichtiger als Pace.</li>
+          <li>Lockeres Laufen kann helfen, muss aber nicht erzwungen werden.</li>
+          <li>Bei Krämpfen, starker Müdigkeit oder schlechtem Schlaf: Einheit reduzieren.</li>
+          <li>Kein schlechtes Gewissen bei Anpassungen.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Nach der Periode</h3>
+        <p>
+          Nach der Periode fühlen sich viele Frauen wieder leichter, belastbarer und mental stabiler.
+          Diese Phase eignet sich oft gut für Qualitätseinheiten.
+        </p>
+        <ul>
+          <li>Tempo kann sich natürlicher anfühlen.</li>
+          <li>Intervalle oder progressive Läufe können gut funktionieren.</li>
+          <li>Trotzdem gilt: kontrolliert bleiben, nicht überpacen.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Vor der Periode</h3>
+        <p>
+          Die Tage vor der Periode können die gefühlte Belastung erhöhen.
+          Das Rennen liegt voraussichtlich genau in dieser sensiblen Phase.
+        </p>
+        <ul>
+          <li>mehr Wärmeempfinden möglich</li>
+          <li>mehr Hunger oder Cravings möglich</li>
+          <li>schwerere Beine möglich</li>
+          <li>sensiblerer Magen möglich</li>
+          <li>höhere emotionale Reaktivität möglich</li>
+        </ul>
+        <p>
+          Das ist keine Ausrede und keine Schwäche. Es ist ein realistischer Teil deiner Rennplanung.
+        </p>
+      </div>
+    </div>
+
+    <div class="card callout cycle-callout">
+      <h3>Mentale Vorbereitung: Race Day 1 Tag vor der Periode</h3>
+      <p>
+        Der wichtigste mentale Schritt ist: Du erwartest nicht, dass sich der Renntag perfekt anfühlt.
+        Wenn du schon vorher weißt, dass sich dein Körper schwerer anfühlen kann,
+        wirst du am Start nicht überrascht oder verunsichert.
+      </p>
+      <ul>
+        <li><strong>Vorab-Plan:</strong> „Die ersten 2 km dürfen sich zäh anfühlen. Ich bleibe ruhig.“</li>
+        <li><strong>Bewertung ändern:</strong> Nicht „fühlt sich schwer an = ich bin schlecht“, sondern „fühlt sich schwer an = ich brauche Geduld“.</li>
+        <li><strong>Start kontrollieren:</strong> Nicht gegen das Körpergefühl anrennen.</li>
+        <li><strong>Versorgung ernst nehmen:</strong> Carbs, Flüssigkeit und Salz können wichtiger sein als sonst.</li>
+        <li><strong>Fokus-Satz:</strong> „Ich laufe nicht gegen meinen Körper, ich arbeite mit ihm.“</li>
+      </ul>
+      <p>
+        Ziel ist nicht, die Zyklusphase wegzudenken. Ziel ist, vorbereitet zu sein und trotzdem sicher zu finishen.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="fueling">
+  <div class="wrap">
+    <h2>Fueling & Post Run Shake</h2>
+
+    <div class="grid three">
+      <div class="card">
+        <h3>Vor dem Lauf</h3>
+        <p>
+          Vor einem Lauf braucht dein Körper vor allem gut verfügbare Energie.
+          Besonders vor Intervallen oder langen Läufen solltest du nicht zu hungrig starten.
+        </p>
+        <ul>
+          <li><strong>2–3 Stunden vorher:</strong> normale Mahlzeit mit Kohlenhydraten + etwas Protein.</li>
+          <li><strong>30–60 Minuten vorher:</strong> kleine, leichte Carb-Quelle.</li>
+          <li><strong>Gute Optionen:</strong> Banane, Toast mit Honig, kleine Haferportion, Dattel.</li>
+          <li><strong>Eher vorsichtig:</strong> große Milchmengen, sehr fettige Speisen, sehr ballaststoffreiche Mahlzeiten kurz vorher.</li>
+        </ul>
+        <p>
+          Wenn Stillen kurz vor dem Lauf Hunger auslöst: lieber klein und leicht nachlegen,
+          statt mit leerem Tank loszulaufen.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Fueling für Frauen</h3>
+        <p>
+          Frauen profitieren besonders davon, Energieverfügbarkeit ernst zu nehmen.
+          Zu wenig Energie kann Training schwerer machen und Recovery verschlechtern.
+          In Stillzeit und vor der Periode gilt das noch stärker.
+        </p>
+        <ul>
+          <li>Kein aggressives Kaloriendefizit rund um harte Einheiten.</li>
+          <li>Vor Long Runs und Intervallen Kohlenhydrate einplanen.</li>
+          <li>Bei Wärme: Flüssigkeit + Elektrolyte überlegen.</li>
+          <li>In der späten Zyklusphase können Hunger und Wärmeempfinden steigen.</li>
+          <li>Nichts Neues am Race Day testen.</li>
+        </ul>
+        <p>
+          <strong>Merksatz:</strong> Gut versorgt laufen ist kein „Cheat“, sondern Trainingsqualität.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Post Run Shake</h3>
+        <p>
+          Nach dem Lauf geht es darum, dem Körper schnell Baustoffe und Energie zurückzugeben.
+          Besonders nach Intervallen oder längeren Läufen kann ein Shake praktisch sein.
+        </p>
+        <ul>
+          <li><strong>Protein:</strong> z. B. Joghurt, Skyr, Proteinpulver oder Milch.</li>
+          <li><strong>Carbs:</strong> Banane, Datteln, Haferflocken, Beeren.</li>
+          <li><strong>Flüssigkeit:</strong> Milch, Pflanzendrink oder Wasser.</li>
+          <li><strong>Optional:</strong> Prise Salz bei Wärme oder starkem Schwitzen.</li>
+        </ul>
+        <p>
+          Danach darf trotzdem eine richtige Mahlzeit folgen.
+          Der Shake ersetzt nicht zwingend Essen – er überbrückt Recovery.
+        </p>
+      </div>
+    </div>
+
+    <div class="card fueling-formula">
+      <h3>Praktische Vor-dem-Lauf-Formel</h3>
+      <p>
+        Wenn der Lauf in 60 Minuten startet:
+      </p>
+      <ul>
+        <li>kleine Portion Carbs</li>
+        <li>wenig Fett</li>
+        <li>wenig Ballaststoffe</li>
+        <li>keine Experimente</li>
+        <li>Wasser in kleinen Schlucken</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="rpe">
+  <div class="wrap grid two">
+    <div class="card">
+      <h2>RPE – Bedeutung fürs Training</h2>
+      <p>
+        RPE bedeutet „Rate of Perceived Exertion“ – also wie anstrengend sich eine Einheit subjektiv anfühlt.
+        Da du aktuell ohne Pulsgurt trainierst, ist RPE der wichtigste Steuerungsmarker.
+      </p>
+
+      <ul>
+        <li><span class="highlight">RPE 3–4</span> → sehr locker, Recovery, du kannst problemlos reden.</li>
+        <li><span class="highlight">RPE 4–5</span> → Grundlagenlauf, kontrolliert, stabil, angenehm fordernd.</li>
+        <li><span class="highlight">RPE 6</span> → zügig, kurze Sätze möglich, Intervallbereich.</li>
+        <li><span class="highlight">RPE 7</span> → hart, nur kurzzeitig und selten nötig.</li>
+        <li><span class="highlight">RPE 8–10</span> → für dieses Projekt aktuell nicht notwendig.</li>
+      </ul>
+
+      <p>
+        RPE schützt dich davor, an schwierigen Tagen zu viel zu machen.
+        Hitze, Schlafmangel, Stillen, Stress, Kinderwagen oder Zyklus können dieselbe Pace deutlich härter machen.
+      </p>
+
+      <p>
+        <strong>Merksatz:</strong> Die richtige Intensität ist die, die zur Aufgabe des Tages passt.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Recovery & Anpassung</h2>
+      <p>
+        Training setzt nur den Reiz. Stärker wirst du in der Erholung.
+        Deshalb sind Schlaf, Essen, Hydration und Pausen Teil des Trainingsplans.
+      </p>
+      <ul>
+        <li>Ein ausgelassener Lauf zerstört keinen Plan.</li>
+        <li>Überlastung entsteht oft durch „Nachholen wollen“.</li>
+        <li>Nach harten Einheiten darf der nächste Lauf bewusst locker sein.</li>
+        <li>Familienalltag zählt als Belastung mit.</li>
+      </ul>
+      <p>
+        Wenn du müde bist, ist die beste Anpassung oft nicht „härter kämpfen“,
+        sondern intelligenter laufen.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="card">
+      <h2>Stillzeit & Training</h2>
+      <p>
+        Stillzeit ist eine zusätzliche körperliche Belastung. Training darf in dieser Phase funktionieren,
+        aber es braucht mehr Aufmerksamkeit für Energie, Flüssigkeit, Schlaf und Tagesform.
+      </p>
+      <ul>
+        <li><strong>Energie:</strong> Vor und nach dem Lauf bewusst essen, besonders bei längeren oder schnelleren Einheiten.</li>
+        <li><strong>Flüssigkeit:</strong> Durst ernst nehmen und rund ums Stillen sowie Training regelmäßig trinken.</li>
+        <li><strong>Brustkomfort:</strong> Ein gut sitzender Sport-BH und ein passender Zeitpunkt nach dem Stillen können das Laufen angenehmer machen.</li>
+        <li><strong>Intensität:</strong> RPE ist wichtiger als Pace, weil Schlaf, Stillen und Alltag die Belastung deutlich verändern können.</li>
+        <li><strong>Anpassung:</strong> Bei ungewohnter Erschöpfung, Schmerzen, Schwindel oder starkem Druckgefühl lieber reduzieren und bei Bedarf medizinisch abklären.</li>
+      </ul>
+      <p>
+        <strong>Merksatz:</strong> In der Stillzeit ist gut versorgt laufen kein Extra, sondern Teil des Trainings.
+      </p>
+    </div>
+
+    <div class="card content-placeholder">
+      <h2>Platz für neue Inhalte</h2>
+      <p>
+        Dieser Bereich ist bewusst offen, damit ihr später weitere Themen ergänzen könnt.
+        Einfach neue Cards oder Abschnitte nach diesem Muster einfügen.
+      </p>
+
+      <div class="placeholder">
+        <h3>Neue Themen hier ergänzen</h3>
+        <ul>
+          <li>Race Strategy</li>
+          <li>Wettkampf-Nervosität</li>
+          <li>Atmung beim Laufen</li>
+          <li>Laufschuhe</li>
+          <li>Hydration im Sommer</li>
+          <li>Motivation</li>
+          <li>Recovery Routinen</li>
+          <li>Fuß- und Lauftechnik</li>
+          <li>Checkliste für Race Week</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="footer">
+  <div class="wrap">RoadTo10k v3 · Dashboard + Wissensdatenbank für Franzi</div>
+</section>
+
+<script>
+const runs = [{"week": "Woche 1", "date": "29.04.", "title": "Lockerer Lauf", "plan": "Freier lockerer Grundlagenlauf", "dist": 5.89, "time": "46:35", "pace": "7:54", "rpe": "4–5", "notes": "Gewohnte Strecke, erster dokumentierter Lauf. Ziel: locker reinkommen und Routine starten.", "pace_sec": 474, "time_sec": 2795}, {"week": "Woche 1", "date": "02.05.", "title": "Lockerer Lauf", "plan": "5 min Warm-up · 40 min locker · 5 min Cooldown", "dist": 5.6, "time": "50:19", "pace": "8:59", "rpe": "4–5", "notes": "Im Urlaub, strukturierter Ablauf. Langsamer, aber sehr sauber gesteuert.", "pace_sec": 539, "time_sec": 3019}, {"week": "Woche 2", "date": "04.05.", "title": "Lockerer Lauf", "plan": "40–45 min locker", "dist": 5.96, "time": "46:20", "pace": "7:46", "rpe": "4–5", "notes": "24°C, trotzdem stabil. Sehr gutes negatives Pacing.", "pace_sec": 466, "time_sec": 2780}, {"week": "Woche 2", "date": "06.05.", "title": "Tempowechsel / Qualität", "plan": "40 min Hauptlauf, Warm-up/Cooldown separat", "dist": 4.65, "time": "40:20", "pace": "8:40", "rpe": "5", "notes": "Regnerisch, bessere Route. Erste strukturierte Qualitätseinheit.", "pace_sec": 520, "time_sec": 2420}, {"week": "Woche 2", "date": "09.05.", "title": "Langer Lauf", "plan": "45–50 min locker", "dist": 6.18, "time": "50:05", "pace": "8:06", "rpe": "—", "notes": "Erstmalig ohne Kinderwagen. Sehr kontrolliert und mental positiv.", "pace_sec": 486, "time_sec": 3005}, {"week": "Woche 3", "date": "11.05.", "title": "Easy Run", "plan": "40 min locker", "dist": 5.95, "time": "53:15", "pace": "8:57", "rpe": "—", "notes": "Mit Kinderwagen. Reise-Woche, bewusst locker.", "pace_sec": 537, "time_sec": 3195}, {"week": "Woche 3", "date": "14.05.", "title": "Intervalllauf", "plan": "10 min WU · 4×3 min zügig / 3 min locker · CD", "dist": 4.6, "time": "36:07", "pace": "7:51", "rpe": "—", "notes": "Erster echter Intervalllauf. Mental hart, aber erfolgreich abgeschlossen.", "pace_sec": 471, "time_sec": 2167}, {"week": "Woche 4", "date": "18.05.", "title": "Lockerer Lauf", "plan": "40–45 min locker", "dist": 6.41, "time": "55:04", "pace": "8:35", "rpe": "—", "notes": "Stabile Umfangsentwicklung, längerer lockerer Lauf.", "pace_sec": 515, "time_sec": 3304}, {"week": "Woche 4", "date": "21.05.", "title": "Long Run gekürzt", "plan": "Geplant: 50 min locker", "dist": 6.47, "time": "57:46", "pace": "8:55", "rpe": "—", "notes": "Gekürzter Long Run, aber längste dokumentierte Belastungszeit.", "pace_sec": 535, "time_sec": 3466}, {"week": "Woche 4", "date": "24.05.", "title": "Intervalllauf", "plan": "10 min WU · 3×4 min zügig / 3 min locker · 10 min CD", "dist": 4.52, "time": "38:13", "pace": "8:27", "rpe": "—", "notes": "Kontrollierte Intervall-Progression. Reiz gesetzt, ohne zu überziehen.", "pace_sec": 507, "time_sec": 2293}];
+function renderTable() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const week = document.getElementById('weekFilter').value;
+  const sortBy = document.getElementById('sortBy').value;
+  let data = runs.filter(r => (!week || r.week === week) && JSON.stringify(r).toLowerCase().includes(q));
+  data.sort((a,b) => {
+    if(sortBy === 'date') return runs.indexOf(a)-runs.indexOf(b);
+    return b[sortBy] - a[sortBy];
+  });
+  const tbody = document.getElementById('runTable');
+  tbody.innerHTML = data.map((r,i) => `
+    <tr>
+      <td>${r.date}</td>
+      <td><span class="tag">${r.week}</span></td>
+      <td>${r.title}</td>
+      <td>${r.plan}</td>
+      <td>${r.dist.toFixed(2)} km · ${r.time} · ${r.pace}/km</td>
+      <td>${r.rpe}</td>
+      <td><button onclick="toggleDetail(${i})">Öffnen</button></td>
+    </tr>
+    <tr id="detail-${i}" style="display:none;">
+      <td colspan="7"><div style="padding:16px;background:#fafafa;border-radius:16px;color:#667085;"><strong>Einordnung:</strong> ${r.notes}</div></td>
+    </tr>
+  `).join('');
+}
+function toggleDetail(i){
+  const el = document.getElementById('detail-'+i);
+  el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+}
+function resetFilters(){
+  document.getElementById('search').value='';
+  document.getElementById('weekFilter').value='';
+  document.getElementById('sortBy').value='date';
+  renderTable();
+}
+document.getElementById('search').addEventListener('input', renderTable);
+document.getElementById('weekFilter').addEventListener('change', renderTable);
+document.getElementById('sortBy').addEventListener('change', renderTable);
+renderTable();
+
+new Chart(document.getElementById('progressChart'), {
+  type:'line',
+  data:{
+    labels:runs.map(r=>r.date),
+    datasets:[
+      { label:'Distanz (km)', data:runs.map(r=>r.dist), tension:.35 },
+      { label:'Dauer (Minuten)', data:runs.map(r=>Math.round(r.time_sec/60)), tension:.35 }
+    ]
+  },
+  options:{
+    responsive:true,
+    plugins:{ legend:{ position:'bottom' } },
+    scales:{ y:{ beginAtZero:false } }
+  }
+});
+
+const sections = [...document.querySelectorAll('section, header')];
+const links = [...document.querySelectorAll('.menu a')];
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(sec => {
+    if (window.scrollY >= sec.offsetTop - 90) current = sec.id;
+  });
+  links.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+</body>
+</html>
