@@ -583,7 +583,7 @@ ul { margin:8px 0 0 20px; line-height:1.65; }
         <li>Familienalltag zählt als Belastung mit.</li>
       </ul>
       <p>
-        Wenn du müde bist, ist die beste Anpassung oft nicht „härter kämpfen“,
+        Wenn du müde bist, ist die beste Anpassung oft nicht „härter kämpfen",
         sondern intelligenter laufen.
       </p>
     </div>
@@ -686,8 +686,8 @@ new Chart(document.getElementById('progressChart'), {
   data:{
     labels:runs.map(r=>r.date),
     datasets:[
-      { label:'Distanz (km)', data:runs.map(r=>r.dist), tension:.35 },
-      { label:'Dauer (Minuten)', data:runs.map(r=>Math.round(r.time_sec/60)), tension:.35 }
+      { label:'Distanz (km)', data:runs.map(r=>r.dist), tension:.35, borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.25)', pointBackgroundColor:'#22c55e', pointBorderColor:'#16a34a' },
+      { label:'Dauer (Minuten)', data:runs.map(r=>Math.round(r.time_sec/60)), tension:.35, borderColor:'#db6799', backgroundColor:'rgba(219,103,153,.25)', pointBackgroundColor:'#db6799', pointBorderColor:'#c84f84' }
     ]
   },
   options:{
